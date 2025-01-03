@@ -15,11 +15,13 @@ import android.Manifest
 
 
 @Composable
-fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Modifier=Modifier){
+fun HomeScreen(permissionViewmodel:PermissionViewmodel=viewModel(),modifier: Modifier=Modifier){
 
     val context = LocalContext.current
 
-
+//This could be any other permission,
+// for Notification permission you have to handle the cases where Android 13 is not supported
+    val permission= Manifest.permission.CAMERA
     val toShowrational by  permissionViewmodel.showRationaleDialog
     val permissionState by permissionViewmodel.permistionState
 
@@ -30,7 +32,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
                 permissionViewmodel.updatePermistionState(true)
             } else {
 
-                if (PermissionUtils.shouldShowRationale(context,  Manifest.permission.POST_NOTIFICATIONS)) {
+                if (PermissionUtils.shouldShowRationale(context, permission)) {
                     //will be changed
                     permissionViewmodel.updateShowRational(true)
                 }
@@ -47,7 +49,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
 
     LaunchedEffect(Unit) {
 
-        permissionLauncher.launch( Manifest.permission.POST_NOTIFICATIONS)
+        permissionLauncher.launch(permission)
 
     }
 
@@ -59,14 +61,14 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
             onDismiss = { permissionViewmodel.updateShowRational(false) },
             onConfirm = {
                 permissionViewmodel.updateShowRational(false) // Dismiss the dialog
-                permissionLauncher.launch( Manifest.permission.POST_NOTIFICATIONS) // Retry permission
+                permissionLauncher.launch(permission) // Retry permission
             }
         )
 
     }
 
     if(permissionState){
-        NotificationUtils.sendtheNotification(context,"Notification Demo","The permission has been accepted!!!")
+       //Implement the Camera feature(Calling a compose or a function that will call the camera)
         Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
 
     }
