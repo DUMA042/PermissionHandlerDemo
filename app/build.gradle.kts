@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.permissionhandlerdemo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.permissionhandlerdemo"
@@ -40,6 +40,11 @@ android {
 }
 
 dependencies {
+    //for the Viewmodel class
+//    implementation(libs.lifecycle.viewmodel.ktx)
+    //for the viewmodel() function
+    implementation(libs.lifecycle.viewmodel.compose)
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
