@@ -5,24 +5,32 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 
 
-class PermissionViewmodel:ViewModel() {
 
-    private val _permistionState = mutableStateOf<Boolean>(false)
-    val permistionState: State<Boolean> get() = _permistionState
+class PermissionViewmodel : ViewModel() {
 
+    private val _permissionStates = mutableStateOf<Map<String, Boolean>>(emptyMap())
+    val permissionStates: State<Map<String, Boolean>> get() = _permissionStates
 
     private val _showRationaleDialog = mutableStateOf(false)
     val showRationaleDialog get() = _showRationaleDialog
 
+    private var _currentPermissions: List<String> = emptyList()
 
-    fun updatePermistionState(newValue: Boolean = false){
-        _permistionState.value= newValue
+    fun updatePermissionState(permission: String, isGranted: Boolean) {
+        _permissionStates.value = _permissionStates.value.toMutableMap().apply {
+            this[permission] = isGranted
+        }
     }
 
-
-    fun updateShowRational(newOption: Boolean = true){
-        _showRationaleDialog.value= newOption
+    fun updateShowRational(newOption: Boolean = true) {
+        _showRationaleDialog.value = newOption
     }
 
+    fun setCurrentPermissions(permissions: List<String>) {
+        _currentPermissions = permissions
+    }
 
+    fun getCurrentPermissions(): List<String> {
+        return _currentPermissions
+    }
 }

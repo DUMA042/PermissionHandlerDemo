@@ -10,68 +10,71 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Modifier
 import android.Manifest
-
-
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlin.collections.toTypedArray
 
 
 @Composable
-fun HomeScreen(permissionViewmodel:PermissionViewmodel=viewModel(),modifier: Modifier=Modifier){
-
+fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val permissions = listOf(
+        Manifest.permission.CALL_PHONE,
+        Manifest.permission.CAMERA
+    )
+    val toShowrational by permissionViewmodel.showRationaleDialog
+    val permissionStates by permissionViewmodel.permissionStates
+    var showPermissionButton by remember { mutableStateOf(true) }
 
-//This could be any other permission,
-// for Notification permission you have to handle the cases where Android 13 is not supported
-    val permission= Manifest.permission.CAMERA
-    val toShowrational by  permissionViewmodel.showRationaleDialog
-    val permissionState by permissionViewmodel.permistionState
-
-    val permissionLauncher= rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            if (isGranted) {
-                permissionViewmodel.updatePermistionState(true)
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { permissionsResult ->
+            permissionsResult.forEach { (permission, isGranted) ->
+                permissionViewmodel.updatePermissionState(permission, isGranted)
+            }
+            if (PermissionUtils.areAllPermissionsGranted(context, permissions)) {
+                showPermissionButton = false
+                Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
             } else {
-
-                if (PermissionUtils.shouldShowRationale(context, permission)) {
-                    //will be changed
+                if (PermissionUtils.shouldShowRationaleForMultiplePermissions(context, permissions)) {
                     permissionViewmodel.updateShowRational(true)
+                } else {
+                    Toast.makeText(context, "Some permissions were denied.", Toast.LENGTH_SHORT).show()
                 }
-                Toast.makeText(
-                    context,
-                    "Camera permission was denied.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         }
     )
 
-
-
     LaunchedEffect(Unit) {
-
-        permissionLauncher.launch(permission)
-
+        permissionViewmodel.setCurrentPermissions(permissions)
     }
 
+    if (showPermissionButton) {
+        Button(onClick = {
+            if (!PermissionUtils.areAllPermissionsGranted(context, permissions)) {
+                notificationPermissionLauncher.launch(permissions.toTypedArray())
+            } else {
+                Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
+                showPermissionButton = false
+            }
+        }) {
+            Text("Request Permissions")
+        }
+    }
 
-
-
-    if(toShowrational){
+    if (toShowrational) {
         ShowRationaleDialog(
             onDismiss = { permissionViewmodel.updateShowRational(false) },
             onConfirm = {
-                permissionViewmodel.updateShowRational(false) // Dismiss the dialog
-                permissionLauncher.launch(permission) // Retry permission
-            }
+                permissionViewmodel.updateShowRational(false)
+                notificationPermissionLauncher.launch(permissionViewmodel.getCurrentPermissions().toTypedArray())
+            },
+            title = "Permissions Required",
+            body = "This app needs these permissions to function properly."
         )
-
     }
-
-    if(permissionState){
-       //Implement the Camera feature(Calling a compose or a function that will call the camera)
-        Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-
-    }
-
-
 }
