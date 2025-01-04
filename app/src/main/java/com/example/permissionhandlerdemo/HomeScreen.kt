@@ -66,7 +66,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
     }
 
     if(permissionState){
-        NotificationUtils.sendtheNotification(context,"Notification Demo","The permission has been accepted!!!")
+       //Get the user location
         Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
 
     }
