@@ -18,7 +18,7 @@ import android.Manifest
 fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Modifier=Modifier){
 
     val context = LocalContext.current
-
+    val permissions= Manifest.permission.ACCESS_FINE_LOCATION
 
     val toShowrational by  permissionViewmodel.showRationaleDialog
     val permissionState by permissionViewmodel.permistionState
@@ -30,7 +30,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
                 permissionViewmodel.updatePermistionState(true)
             } else {
 
-                if (PermissionUtils.shouldShowRationale(context,  Manifest.permission.POST_NOTIFICATIONS)) {
+                if (PermissionUtils.shouldShowRationale(context,permissions)) {
                     //will be changed
                     permissionViewmodel.updateShowRational(true)
                 }
@@ -47,7 +47,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
 
     LaunchedEffect(Unit) {
 
-        permissionLauncher.launch( Manifest.permission.POST_NOTIFICATIONS)
+        permissionLauncher.launch(permissions)
 
     }
 
@@ -59,7 +59,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel=viewModel(),modifier: Mo
             onDismiss = { permissionViewmodel.updateShowRational(false) },
             onConfirm = {
                 permissionViewmodel.updateShowRational(false) // Dismiss the dialog
-                permissionLauncher.launch( Manifest.permission.POST_NOTIFICATIONS) // Retry permission
+                permissionLauncher.launch(permissions) // Retry permission
             }
         )
 
