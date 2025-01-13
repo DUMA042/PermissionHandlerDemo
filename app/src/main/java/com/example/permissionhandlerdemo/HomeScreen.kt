@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import android.Manifest
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,16 +26,17 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
         Manifest.permission.CAMERA
     )
     val toShowrational by permissionViewmodel.showRationaleDialog
-    val permissionStates by permissionViewmodel.permissionStates
+
     var showPermissionButton by remember { mutableStateOf(true) }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+    val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissionsResult ->
             permissionsResult.forEach { (permission, isGranted) ->
                 permissionViewmodel.updatePermissionState(permission, isGranted)
             }
             if (PermissionUtils.areAllPermissionsGranted(context, permissions)) {
+
                 showPermissionButton = false
                 Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
             } else {
@@ -56,7 +56,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
     if (showPermissionButton) {
         Button(onClick = {
             if (!PermissionUtils.areAllPermissionsGranted(context, permissions)) {
-                notificationPermissionLauncher.launch(permissions.toTypedArray())
+                permissionLauncher.launch(permissions.toTypedArray())
             } else {
                 Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
                 showPermissionButton = false
@@ -71,7 +71,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
             onDismiss = { permissionViewmodel.updateShowRational(false) },
             onConfirm = {
                 permissionViewmodel.updateShowRational(false)
-                notificationPermissionLauncher.launch(permissionViewmodel.getCurrentPermissions().toTypedArray())
+                permissionLauncher.launch(permissionViewmodel.getCurrentPermissions().toTypedArray())
             },
             title = "Permissions Required",
             body = "This app needs these permissions to function properly."
