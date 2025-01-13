@@ -10,8 +10,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Modifier
 import android.Manifest
-
-
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 
 
 @Composable
@@ -68,7 +71,16 @@ fun HomeScreen(permissionViewmodel:PermissionViewmodel=viewModel(),modifier: Mod
     }
 
     if(permissionState){
+
        //Implement the Camera feature(Calling a compose or a function that will call the camera)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = "Camera Feature now accessible",
+                modifier = Modifier.align(Alignment.Center),
+                textAlign = TextAlign.Center
+            )
+        }
+
         Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
 
     }
