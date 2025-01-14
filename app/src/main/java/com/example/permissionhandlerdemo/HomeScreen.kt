@@ -10,11 +10,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Modifier
 import android.Manifest
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import kotlin.collections.toTypedArray
 
 
@@ -27,7 +30,12 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
     )
     val toShowrational by permissionViewmodel.showRationaleDialog
 
-    var showPermissionButton by remember { mutableStateOf(true) }
+
+
+    var permissionStatus by remember { mutableStateOf(false) }
+
+
+
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -36,35 +44,50 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
                 permissionViewmodel.updatePermissionState(permission, isGranted)
             }
             if (PermissionUtils.areAllPermissionsGranted(context, permissions)) {
-
-                showPermissionButton = false
+                 permissionStatus=true
                 Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
+
             } else {
-                if (PermissionUtils.shouldShowRationaleForMultiplePermissions(context, permissions)) {
+                if (PermissionUtils.shouldShowRationaleForMultiplePermissions(
+                        context,
+                        permissions
+                    )
+                ) {
                     permissionViewmodel.updateShowRational(true)
                 } else {
-                    Toast.makeText(context, "Some permissions were denied.", Toast.LENGTH_SHORT).show()
+                    permissionStatus=false
+                    Toast.makeText(context, "Some permissions were denied.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
     )
 
+    permissionViewmodel.setCurrentPermissions(permissions)//to register  the permissions in the viewmodel
+
+
+
     LaunchedEffect(Unit) {
-        permissionViewmodel.setCurrentPermissions(permissions)
+        permissionLauncher.launch(permissions.toTypedArray())
     }
 
-    if (showPermissionButton) {
-        Button(onClick = {
-            if (!PermissionUtils.areAllPermissionsGranted(context, permissions)) {
-                permissionLauncher.launch(permissions.toTypedArray())
-            } else {
-                Toast.makeText(context, "All Permissions Granted", Toast.LENGTH_SHORT).show()
-                showPermissionButton = false
-            }
-        }) {
-            Text("Request Permissions")
+
+
+
+
+
+
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    if (permissionStatus) {
+        Text("Permissions Granted")
+
+    }
+            else{  Text("Permissions Not Granted")}
+
         }
     }
+
 
     if (toShowrational) {
         ShowRationaleDialog(
@@ -74,7 +97,7 @@ fun HomeScreen(permissionViewmodel: PermissionViewmodel = viewModel(), modifier:
                 permissionLauncher.launch(permissionViewmodel.getCurrentPermissions().toTypedArray())
             },
             title = "Permissions Required",
-            body = "This app needs these permissions to function properly."
+            body = permissionViewmodel.formatStringList(permissionViewmodel.getDeniedPermissions())
         )
     }
 }
